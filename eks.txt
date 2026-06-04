@@ -1,0 +1,64 @@
+sudo apt-get update -y && sudo apt-get upgrade -y
+sudo apt-get install -y curl wget unzip tar git jq
+# Download the installer
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
+     -o "awscliv2.zip"
+
+# Unzip and install
+unzip awscliv2.zip
+sudo ./aws/install
+
+# Clean up
+rm -rf awscliv2.zip aws/
+aws --version
+
+# Get latest stable version string
+KUBECTL_VERSION=$(curl -sL https://dl.k8s.io/release/stable.txt)
+
+# Download kubectl binary
+curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+
+# Make executable and move to PATH
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/kubectl
+kubectl version --client
+
+# Download latest eksctl
+curl --silent --location \
+  "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
+  | tar xz -C /tmp
+
+# Move to PATH
+sudo mv /tmp/eksctl /usr/local/bin
+
+# Verify
+eksctl version
+
+aws configure
+
+aws sts get-caller-identity
+
+eksctl create cluster \
+  --name my-eks-cluster \
+  --region ap-south-1 \
+  --nodegroup-name standard-workers \
+  --node-type t3.medium \
+  --nodes 2 \
+  --nodes-min 1 \
+  --nodes-max 3 \
+  --managed
+
+  kubectl get nodes
+
+  vi pod.yml
+
+  kind: Pod
+  apiVersion: v1
+  metadata:
+   name: myfirstpod
+  spec:
+   containers:
+    -name: apachecon
+     image: <<image name>>
+     port: 
+      -containerPort: 80
